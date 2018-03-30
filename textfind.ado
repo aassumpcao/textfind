@@ -2,7 +2,6 @@
 // by Andre Assumpcao
 // aassumpcao@unc.edu
 // Version 1.0 created: Jan 27, 2018
-// Last updated:	Feb  2, 2018
 
 // Textfind is a data-driven program to identify and perform statistical tests on textual data
 // based on flexible search criteria following regular expressions. Textfind is useful for people
@@ -93,13 +92,13 @@ program textfind, rclass
 					tempvar `i'`z'1 `i'`z'2 `i'`z'3 `i'`z'4 `i'`z'5	`i'`z'6				// These are the six ordered
 															// statistics used in table
 					// Statistic 1: Total finds
-					gen ``i'`z'1'	  	= `key`z'' if `touse'
-					sum ``i'`z'1'	  	if `touse'
-					return scalar f`i'`z'1 	= `r(sum)'
+					gen ``i'`z'1'	  	   	= `key`z'' if `touse'
+					sum ``i'`z'1'	  	   	if `touse'
+					return scalar f`i'`z'1 	   		= `r(sum)'
 					
 					// Statistic 2: Average finds per obs
 					tempvar `i'keylength`z'
-					gen	 ``i'keylength`z'' 	= cond(`key`z'',ustrlen(`"`y'"'),0) if `touse'
+					gen	 ``i'keylength`z'' 		= cond(`key`z'',ustrlen(`"`y'"'),0) if `touse'
 					if `"`case'"'!="" {
 						gen ``i'`z'2'	   	= cond(`key`z'',(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",1)))/``i'keylength`z'',.,.) if `touse'
 					}
@@ -108,163 +107,163 @@ program textfind, rclass
 					}
 					capture assert ``i'`z'2'==.
 					if _rc {
-						sum ``i'`z'2'      	if ``i'`z'2'!=. & `touse'
-						return scalar f`i'`z'2	= `r(mean)'
+						sum ``i'`z'2'      		if ``i'`z'2'!=. & `touse'
+						return scalar f`i'`z'2 		= `r(mean)'
 					}
 					else {
-						return scalar f`i'`z'2	= 0
+						return scalar f`i'`z'2 		= 0
 					}
 					
 					// Statistic 3: Average word length when keyword is found
 					gen  ``i'`z'3'		   	= cond(`key`z'',ustrwordcount(`i'),0,.) if `touse'
 					capture assert ``i'`z'3'==0 | assert ``i'`z'3'==.
 					if _rc {
-						sum ``i'`z'3'      	if (``i'`z'3'!=0 | ``i'`z'3'!=.) & `touse'
-						return scalar f`i'`z'3 	= `r(mean)'
+						sum ``i'`z'3'      		if (``i'`z'3'!=0 | ``i'`z'3'!=.) & `touse'
+						return scalar f`i'`z'3 		= `r(mean)'
 					}
 					else {
-						return scalar f`i'`z'3 	= .
+						return scalar f`i'`z'3 		= .
 					}
 					
 					// Statistic 4: Average word position when keyword is found
-					gen ``i'`z'4' 		   	  = 0 if `touse'
+					gen ``i'`z'4' 		   	= 0 if `touse'
 					forv j=1/`return(max)' {
 						if `"`case'"'!="" {
-							replace ``i'`z'4' = cond(ustrregexm(ustrword(`i',`j'), `"`y'"',1)==1,`j',0,.)
+							replace ``i'`z'4'	= cond(ustrregexm(ustrword(`i',`j'), `"`y'"',1)==1,`j',0,.)
 						}
 						else {
-							replace ``i'`z'4' = cond(ustrregexm(ustrword(`i',`j'), `"`y'"',0)==1,`j',0,.)
+							replace ``i'`z'4'	= cond(ustrregexm(ustrword(`i',`j'), `"`y'"',0)==1,`j',0,.)
 						}
 					}
 					capture assert ``i'`z'4'==0 | assert ``i'`z'4'==.
 					if _rc {
 						sum ``i'`z'4'	   	if (``i'`z'4'!=0 | ``i'`z'4'!=.) & `touse'
-						return scalar f`i'`z'4	  = `r(mean)'
+						return scalar f`i'`z'4 		= `r(mean)'
 					}
 					else {
-						return scalar f`i'`z'4 	  = .
+						return scalar f`i'`z'4 		= .
 					}
 					
 					// Statistic 5: Average tf-idf when keyword is found
 					tempvar `i'sum`z' `i'keytfidf`z'
-					egen ``i'sum`z''		= total(``i'`z'1') if `touse'
+					egen ``i'sum`z''			= total(``i'`z'1') if `touse'
 					gen ``i'keytfidf`z''   		= cond(`key`z'',(``i'`z'2'/``i'length')*ln(``i'count'/``i'sum`z''),0,.) if `touse'
 					capture assert ``i'keytfidf`z''==0 | assert ``i'keytfidf`z''==.
 					if _rc {
 						sum ``i'keytfidf`z''	if (``i'keytfidf`z''!=0 | ``i'keytfidf`z''!=.) & `touse'
-						return scalar f`i'`z'5	= `r(mean)'
+						return scalar f`i'`z'5		= `r(mean)'
 					}
 					else {
-						return scalar f`i'`z'5	= .
+						return scalar f`i'`z'5		= .
 					}
 					
 					// Statistic 6: Type-I error p-value
 					tempvar `i'0
-					gen ``i'0'			=0 if `touse'
+					gen ``i'0'			   	=0 if `touse'
 					if		`z'==1 {
 						ttest ``i'0' 	  	== ``i'`z'1' if `touse'
-						return scalar f`i'`z'6	= `r(p)'
+						return scalar f`i'`z'6		= `r(p)'
 					}
 					else if  `z'>1 {
 						local q=`z'-1
 						local w: word `q' of `keyword'
 						ttest ``i'`q'1'	  	== ``i'`z'1' if `touse'
-						return scalar f`i'`z'6	= `r(p)'
+						return scalar f`i'`z'6		= `r(p)'
 					}				
 				}
 				
 				// Table statistics for exclusion(s)
 				forv z=1/`m' {
 					local y: word `z' of `but'
-					tempvar `i'`z'1 `i'`z'2 `i'`z'3 `i'`z'4 `i'`z'5 `i'`z'6		// These are the six ordered
-													// statistics used in table
+					tempvar `i'`z'1 `i'`z'2 `i'`z'3 `i'`z'4 `i'`z'5 `i'`z'6				// These are the six ordered
+															// statistics used in table
 					// Statistic 1: Total exclusions
-					gen ``i'`z'1'	    	= cond(`not`z'',0,1,.) if `touse'
-					sum ``i'`z'1'	     	if ``i'`z'1'!=. & `touse'
-					return scalar n`i'`z'1	= `r(sum)'
+					gen ``i'`z'1'	  	   	= cond(`not`z'',0,1,.) if `touse'
+					sum ``i'`z'1'	  	   	if ``i'`z'1'!=. & `touse'
+					return scalar n`i'`z'1 	   		= `r(sum)'
 					
 					// Statistic 2: Average number of exclusions
 					tempvar `i'notlength`z'
-					gen	 ``i'notlength`z''	= cond(cond(`not`z'',0,1)==1,ustrlen(`"`y'"'),0,.) if `touse'
+					gen	 ``i'notlength`z'' 		= cond(cond(`not`z'',0,1)==1,ustrlen(`"`y'"'),0,.) if `touse'
 					if `"`case'"'!="" {
-						gen ``i'`z'2'	  	= cond(cond(`not`z'',0,1)==1 & ``i'notlength`z''!=.,(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",1)))/``i'notlength`z'',.) if `touse'
+						gen ``i'`z'2'	   	= cond(cond(`not`z'',0,1)==1 & ``i'notlength`z''!=.,(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",1)))/``i'notlength`z'',.) if `touse'
 					}
 					else {
-						gen ``i'`z'2'	  	= cond(cond(`not`z'',0,1)==1 & ``i'notlength`z''!=.,(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",0)))/``i'notlength`z'',.) if `touse'
+						gen ``i'`z'2'	   	= cond(cond(`not`z'',0,1)==1 & ``i'notlength`z''!=.,(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",0)))/``i'notlength`z'',.) if `touse'
 					}
 					capture assert ``i'`z'2'==.
 					if _rc {
-						sum ``i'`z'2'      	if ``i'`z'2'!=. & `touse'
-						return scalar n`i'`z'2 	= `r(mean)'
+						sum ``i'`z'2'      		if ``i'`z'2'!=. & `touse'
+						return scalar n`i'`z'2 		= `r(mean)'
 					}
 					else {
-						return scalar n`i'`z'2 	= 0
+						return scalar n`i'`z'2 		= 0
 					}
 					
 					// Statistic 3: Average word length when keyword is found
 					gen  ``i'`z'3'		   	= cond(cond(`not`z'',0,1)==1,ustrwordcount(`i'),0,.) if `touse'
 					capture assert ``i'`z'3'==0 | assert ``i'`z'3'==. 
 					if _rc {
-						sum ``i'`z'3'      	if (``i'`z'3'!=0 | ``i'`z'3'!=.) & `touse'
-						return scalar n`i'`z'3 	= `r(mean)'
+						sum ``i'`z'3'      		if (``i'`z'3'!=0 | ``i'`z'3'!=.) & `touse'
+						return scalar n`i'`z'3 		= `r(mean)'
 					}
 					else {
-						return scalar n`i'`z'3 	= .
+						return scalar n`i'`z'3 		= .
 					}
 					
 					// Statistic 4: Average position of exclusion
-					gen ``i'`z'4' 	   		  = 0 if `touse'
+					gen ``i'`z'4' 	   		= 0 if `touse'
 					forv j=1/`return(max)' {
 						if `"`case'"'!="" {
-							replace ``i'`z'4' = cond(ustrregexm(ustrword(`i',`j'), `"`y'"',1)==1,`j',0,.)
+							replace ``i'`z'4'	= cond(ustrregexm(ustrword(`i',`j'), `"`y'"',1)==1,`j',0,.)
 						}
 						else {
-							replace ``i'`z'4' = cond(ustrregexm(ustrword(`i',`j'), `"`y'"',0)==1,`j',0,.)
+							replace ``i'`z'4'	= cond(ustrregexm(ustrword(`i',`j'), `"`y'"',0)==1,`j',0,.)
 						}
 					}
 					capture assert ``i'`z'4'==0 | assert ``i'`z'4'==.
 					if _rc {
-						sum ``i'`z'4'	   	  if (``i'`z'4'!=0 | ``i'`z'4'!=.) & `touse'
-						return scalar n`i'`z'4 	  = `r(mean)'
+						sum ``i'`z'4'	   	if (``i'`z'4'!=0 | ``i'`z'4'!=.) & `touse'
+						return scalar n`i'`z'4 		= `r(mean)'
 					}
 					else {
-						return scalar n`i'`z'4 	  = .
+						return scalar n`i'`z'4 		= .
 					}
 								
 					// Statistic 5: Average tf-idf when keyword is not found
 					tempvar `i'sum`z' `i'keytfidf`z'
-					egen ``i'sum`z''		= total(cond(``i'`z'1',0,1)) if `touse'
+					egen ``i'sum`z''			= total(cond(``i'`z'1',0,1)) if `touse'
 					gen ``i'keytfidf`z''   		= cond(cond(`not`z'',0,1)==1,(``i'`z'2'/``i'length')*ln(``i'count'/``i'sum`z''),0,.) if `touse'
 					capture assert ``i'keytfidf`z'' ==0 | assert ``i'keytfidf`z''==.
 					if _rc {
 						sum ``i'keytfidf`z''	if (``i'keytfidf`z''!=0 | ``i'keytfidf`z''!=.) & `touse'
-						return scalar n`i'`z'5	= `r(mean)'
+						return scalar n`i'`z'5		= `r(mean)'
 					}
 					else {
-						return scalar n`i'`z'5	= .
+						return scalar n`i'`z'5		= .
 					}			
 							
 					// Statistic 6: Type-I error p-value
 					tempvar `i'0
-					gen ``i'0'			=0 if `touse'
+					gen ``i'0'			   	=0 if `touse'
 					if		`z'==1 {
 						ttest ``i'0' 	   	== ``i'`z'1' if `touse'
-						return scalar n`i'`z'6 	= `r(p)'
+						return scalar n`i'`z'6 		= `r(p)'
 					}
 					else if  `z'>1 {
 						local q=`z'-1
 						local w: word `q' of `but'
-						ttest ``i'`q'1'	   	== ``i'`z'1' if `touse'
-						return scalar n`i'`z'6 	= `r(p)'
+						ttest ``i'`q'1'	   		== ``i'`z'1' if `touse'
+						return scalar n`i'`z'6 		= `r(p)'
 					}
 				}
 				
 				// Creation of compiled keyword criteria
-				if 		 `n'>1 {					// The code below is basically renaming the criteria
-					if `"`or'"'!="" {					// so that we can easily use it later. We start off
-						forv z=2/`n' {					// with keyword(s). I include two new alternatives
-							local w=`z'-1				// here: (i) a joint search for all keywords or an
-							local key`z' `"`key`w'' | `key`z''"'	// (ii) alternative search for each keyword
+				if 		 `n'>1 {								// The code below is basically renaming the criteria
+					if `"`or'"'!="" {								// so that we can easily use it later. We start off
+						forv z=2/`n' {								// with keyword(s). I include two new alternatives
+							local w=`z'-1							// here: (i) a joint search for all keywords or an
+							local key`z' `"`key`w'' | `key`z''"'				// (ii) alternative search for each keyword
 						}
 					}
 					else {
@@ -275,21 +274,21 @@ program textfind, rclass
 					}
 					local key `"`key`n''"'
 				}
-				else if `n'==1 {						// In any of the cases above (single, multiple, joint or	
-					local key `"`key1'"'					// or alternative search, they all lead to one	
-				}								// single local: `key'.
+				else if `n'==1 {									// In any of the cases above (single, multiple, joint or	
+					local key `"`key1'"'								// or alternative search, they all lead to one	
+				}											// single local: `key'.
 				di `"`key'"'
 				
 				// Creation of compiled exclusion criteria											
-				if 		 `m'>1 {					// The code below is doing the same for exclusion(s).
-					forv z=2/`m' {						// However, the exclusion(s) just require(s) that any of the
-						local w=`z'-1					// `but' is present. Thus, the search criteria is for any
-						local not`z' `"`not`w'' & `not`z''"'		// occurrences of `but'.		
+				if 		 `m'>1 {								// The code below is doing the same for exclusion(s).
+					forv z=2/`m' {									// However, the exclusion(s) just require(s) that any of the
+						local w=`z'-1								// `but' is present. Thus, the search criteria is for any
+						local not`z' `"`not`w'' & `not`z''"'					// occurrences of `but'.		
 					}
 					local not `"`not`m''"'
 				}
-				else if `m'==1 {						// In any of the cases above (single, multiple, joint or
-					local not `"`not1'"'					// or alternative search, they all lead to one single local: `key'.
+				else if `m'==1 {									// In any of the cases above (single, multiple, joint or
+					local not `"`not1'"'								// or alternative search, they all lead to one single local: `key'.
 				}
 				//di `"`not'"'
 				
@@ -303,42 +302,42 @@ program textfind, rclass
 					if `"`but'"'=="" {
 						// Case 1: key==1 & but==0
 						// Statistic 1: Total finds
-						gen ``i'tot'		= `key' if `touse'
-						sum ``i'tot'		if `touse'
-						return scalar f`i'`t'1	= `r(sum)'
+						gen ``i'tot'	  	   = `key' if `touse'
+						sum ``i'tot'	  	   if `touse'
+						return scalar f`i'`t'1 	   = `r(sum)'
 						
 						// Statistic 2: Average finds per obs
 						if `n'==1 {
 							tempvar `i'keylength`t'
-							gen	 ``i'keylength`t''	= cond(`key',ustrlen(`"`y'"'),0) if `touse'
+							gen	 ``i'keylength`t'' 		= cond(`key',ustrlen(`"`y'"'),0) if `touse'
 							if `"`case'"'!="" {
-								gen ``i'`t'2'	  	= cond(`key',(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",1)))/``i'keylength`t'',.) if `touse'
+								gen ``i'`t'2'	   	= cond(`key',(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",1)))/``i'keylength`t'',.) if `touse'
 							}
 							else {
-								gen ``i'`t'2'	  	= cond(`key',(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",0)))/``i'keylength`t'',.) if `touse'
+								gen ``i'`t'2'	   	= cond(`key',(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",0)))/``i'keylength`t'',.) if `touse'
 							}
 							capture assert ``i'`t'2'==.
 							if _rc {
-								sum ``i'`t'2'      	if ``i'`t'2'!=. & `touse'
-								return scalar f`i'`t'2 	= `r(mean)'
+								sum ``i'`t'2'      		if ``i'`t'2'!=. & `touse'
+								return scalar f`i'`t'2 		= `r(mean)'
 							}
 							else {
-								return scalar f`i'`t'2 	= 0
+								return scalar f`i'`t'2 		= 0
 							}
 						}
 						else {
-							return scalar f`i'`t'2 	   	= .
+							return scalar f`i'`t'2 	   = .
 						}
 						
 						// Statistic 3: Average string length when keyword is found
-						gen  ``i'len'			= cond(`key',ustrwordcount(`i'),0,.) if `touse'
+						gen  ``i'len'		   = cond(`key',ustrwordcount(`i'),0,.) if `touse'
 						capture assert ``i'len'==0 | assert ``i'len'==.
 						if _rc {
-							sum ``i'`len''		if (``i'len'!=0 | ``i'len'!=.) & `touse'
-							return scalar f`i'`t'3	= `r(mean)'
+							sum ``i'`len''     if (``i'len'!=0 | ``i'len'!=.) & `touse'
+							return scalar f`i'`t'3 = `r(mean)'
 						}
 						else {
-							return scalar f`i'`t'3	= .
+							return scalar f`i'`t'3 = .
 						}
 						
 						// Statistic 4: Average position when keyword is found
@@ -346,7 +345,7 @@ program textfind, rclass
 							return scalar f`i'`t'4 = `return(f`i'14)'
 						}
 						else {
-							return scalar f`i'`t'4 = .	// This statistic doesn't make sense for the combined search
+							return scalar f`i'`t'4 	   = . 						// This statistic doesn't make sense for the combined search
 						}
 						
 						// Statistic 5: TF-IDF
@@ -354,7 +353,7 @@ program textfind, rclass
 							return scalar f`i'`t'5 = `return(f`i'15)'
 						}
 						else {
-							return scalar f`i'`t'5 = .	// This statistic doesn't make sense for the combined search
+							return scalar f`i'`t'5	   = . 						// This statistic doesn't make sense for the combined search
 						}
 						
 						// Statistic 6: Type-I error p-value
@@ -365,15 +364,15 @@ program textfind, rclass
 					else {
 						// Case 2: key==1 & but==1
 						// Statistic 1: Total finds
-						gen ``i'tot'		= (`key') & `not' if `touse'
-						sum ``i'tot'	  	if `touse'
-						return scalar f`i'`t'1 	= `r(sum)'
+						gen ``i'tot'	  	   = (`key') & `not' if `touse'
+						sum ``i'tot'	  	   if `touse'
+						return scalar f`i'`t'1 	   = `r(sum)'
 						
 						// Statistic 2: Average finds per obs
 						if `n'==1 {
 							local y: word `n' of `keyword'
 							tempvar `i'keylength`t' `i'`t'2
-							gen	 ``i'keylength`t'' 	= cond(`key' & (`not'),ustrlen(`"`y'"'),0) if `touse'
+							gen	 ``i'keylength`t'' 		= cond(`key' & (`not'),ustrlen(`"`y'"'),0) if `touse'
 							if `"`case'"'!="" {
 								gen ``i'`t'2'   	= cond(`key' & (`not'),(ustrlen(`i')-ustrlen(ustrregexra(`i',`"`y'"',"",1)))/``i'keylength`t'',.) if `touse'
 							}
@@ -382,69 +381,69 @@ program textfind, rclass
 							}
 							capture assert ``i'`t'2' ==.
 							if _rc {
-								sum ``i'`t'2'      	if ``i'`t'2'!=. & `touse'
-								return scalar f`i'`t'2	= `r(mean)'
+								sum ``i'`t'2'       		if ``i'`t'2'!=. & `touse'
+								return scalar f`i'`t'2 		= `r(mean)'
 							}
 							else {
-								return scalar f`i'`t'2	= 0
+								return scalar f`i'`t'2 		= 0
 							}
 						}
 						else {
-							return scalar f`i'`t'2 	  	 = .	// This statistic doesn't make sense for the combined search
+							return scalar f`i'`t'2 	   = . 						// This statistic doesn't make sense for the combined search
 						}
 						
 						// Statistic 3: Average string length when keyword is found
-						gen  ``i'len'			= cond((`key') & (`not'),ustrwordcount(`i'),0,.) if `touse'
+						gen  ``i'len'		   = cond((`key') & (`not'),ustrwordcount(`i'),0,.) if `touse'
 						capture assert ``i'len'==0 | assert ``i'len'==.
 						if _rc {
-							sum ``i'len'		if (``i'len'!=0 | ``i'len'!=.) & `touse'
-							return scalar f`i'`t'3	= `r(mean)'
+							sum ``i'len'       if (``i'len'!=0 | ``i'len'!=.) & `touse'
+							return scalar f`i'`t'3 = `r(mean)'
 						}
 						else {
-							return scalar f`i'`t'3	= .
+							return scalar f`i'`t'3 = .
 						}
 
 						// Statistic 4: Average position when keyword is found
 						if `n'==1 {
 							tempvar `i'`t'4
-							gen ``i'`t'4'			  = 0 if `touse'
+							gen ``i'`t'4' 		   	= 0 if `touse'
 							forv j=1/`return(max)' {
 								if `"`case'"'!="" {
-									replace ``i'`t'4' = cond(ustrregexm(ustrword(`i',`j'), `"`y'"',1)==1,`j',0,.)
+									replace ``i'`t'4'	= cond(ustrregexm(ustrword(`i',`j'), `"`y'"',1)==1,`j',0,.)
 								}
 								else {
-									replace ``i'`t'4' = cond(ustrregexm(ustrword(`i',`j'), `"`y'"',0)==1,`j',0,.)
+									replace ``i'`t'4'	= cond(ustrregexm(ustrword(`i',`j'), `"`y'"',0)==1,`j',0,.)
 								}
 							}
 							capture assert ``i'`t'4'==0 | assert ``i'`t'4'==.
 							if _rc {
-								sum ``i'`t'4'		  if (``i'`t'4'!=0 | ``i'`t'4'!=.) & `touse'
-								return scalar f`i'`t'4 	  = `r(mean)'
+								sum ``i'`t'4'	   	if (``i'`t'4'!=0 | ``i'`t'4'!=.) & `touse'
+								return scalar f`i'`t'4 		= `r(mean)'
 							}
 							else {
-								return scalar f`i'`t'4 	  = .
+								return scalar f`i'`t'4 		= .
 							}
 						}
 						else {
-							return scalar f`i'`t'4 	   	  = .	// This statistic doesn't make sense for the combined search
+							return scalar f`i'`t'4 	   = . 						// This statistic doesn't make sense for the combined search
 						}
 						
 						// Statistic 5: TF-IDF
 						if `n'==1 {
 							tempvar `i'sum`t' `i'keytfidf`t'
-							egen ``i'sum`t''		= total(``i'tot') if `touse'
+							egen ``i'sum`t''			= total(``i'tot') if `touse'
 							gen ``i'keytfidf`t''   		= cond((`key') & (`not'),(``i'`t'2'/``i'length')*ln(``i'count'/``i'sum`t''),0,.) if `touse'
 							capture assert ``i'keytfidf`t''==0 | assert ``i'keytfidf`t''==.
 							if _rc {
 								sum ``i'keytfidf`t''	if (``i'keytfidf`t''!=0 | ``i'keytfidf`t''!=.) & `touse'
-								return scalar f`i'`t'5	= `r(mean)'
+								return scalar f`i'`t'5		= `r(mean)'
 							}
 							else {
-								return scalar f`i'`t'5	= .
+								return scalar f`i'`t'5		= .
 							}
 						}
 						else {
-							return scalar f`i'`t'5		= .	// This statistic doesn't make sense for the combined search
+							return scalar f`i'`t'5	   = . 						// This statistic doesn't make sense for the combined search
 						}
 						
 						// Statistic 6: Type-I error p-value
@@ -456,33 +455,33 @@ program textfind, rclass
 					if `"`but'"'!="" {
 						// Case 3: key==0 & but==1
 						// Statistic 1: Total finds
-						gen ``i'tot'		= `not' if `touse'
-						sum ``i'tot'	  	if `touse'
-						return scalar f`i'`t'1 	= `r(sum)'
+						gen ``i'tot'	  	   = `not' if `touse'
+						sum ``i'tot'	  	   if `touse'
+						return scalar f`i'`t'1 	   = `r(sum)'
 						
 						// Statistic 2: Average finds per obs
-						return scalar f`i'`t'2 	= . 			// This statistic doesn't make sense for the combined search
+						return scalar f`i'`t'2 	   = . 						// This statistic doesn't make sense for the combined search
 						
 						// Statistic 3: Average string length when keyword not is found
-						gen  ``i'len'			= cond(`not',ustrwordcount(`i'),0,.) if `touse'
+						gen  ``i'len'		   = cond(`not',ustrwordcount(`i'),0,.) if `touse'
 						capture assert ``i'len'==0 | assert ``i'len'==.
 						if _rc {
-							sum ``i'`len''		if (``i'len'!=0 | ``i'len'!=.) & `touse'
-							return scalar f`i'`t'3	= `r(mean)'
+							sum ``i'`len''     if (``i'len'!=0 | ``i'len'!=.) & `touse'
+							return scalar f`i'`t'3 = `r(mean)'
 						}
 						else {
-							return scalar f`i'`t'3	= .
+							return scalar f`i'`t'3 = .
 						}
 						
 						// Statistic 4: Average position when keyword is found
-						return scalar f`i'`t'4 = .	// This statistic doesn't make sense for the combined search
+						return scalar f`i'`t'4 	   = . 						// This statistic doesn't make sense for the combined search
 						
 						// Statistic 5: TF-IDF
-						return scalar f`i'`t'5 = .	// This statistic doesn't make sense for the combined search
+						return scalar f`i'`t'5	   = . 						// This statistic doesn't make sense for the combined search
 						
 						// Statistic 6: Type-I error p-value
-						ttest ``i'`m'1'	       == ``i'tot'
-						return scalar f`i'`t'6 = `r(p)'	
+						ttest ``i'`m'1'	   	   == ``i'tot'
+						return scalar f`i'`t'6 	   = `r(p)'	
 					}
 				}
 			} // quietly loop ends
