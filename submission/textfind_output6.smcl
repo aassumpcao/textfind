@@ -1,0 +1,96 @@
+{com}{sf}{ul off}
+. textfind post, key("principal" "economist") nocase
+{txt} 
+Searching keyword "principal" in variable post ...
+Searching keyword "economist" in variable post ...
+
+
+The following table displays the keyword(s) and exclusion(s) criteria used in
+the search and returns six statistics for each variable specified:
+
+Total finds:           the number of observations when criterion is met.
+Average finds per obs: the average occurrence of word when criterion is met.
+Average length:        the average word length when criterion is met.
+Average position:      the average position of match when criterion is met.
+Average tf-idf:        the average term frequency-inverse document frequency
+                       when the criterion is met.
+Means test p-value:    the p-value for a means comparison test across samples
+                       identified by the different criteria.
+
+                               {bf:Summary Table}                               
+{hline 80}
+{res}variable:   {txt}post
+n: 524{col 28}                  Average                   {col 76}Means
+{col 21}Total{col 29}-----------------------------------------{col 77}test
+{res}keyword(s){txt}{col 21}Finds{col 32}Finds{col 42}Length{col 51}Position{col 64}TF-IDF{col 74}p-value
+--------------------------------------------------------------------------------
+principal              88          1    3.27273    1.01136    .608404          .
+economist              10          1          2          2    2.11142    2.3e-21
+--------------------------------------------------------------------------------
+Total                   5          .          2          .          .    .025207
+{hline 80}
+{res}exclusion(s):
+{txt}
+
+{com}. textfind post, key("principal(.)+economist") nocase
+{txt} 
+Searching keyword "principal(.)+economist" in variable post ...
+
+
+The following table displays the keyword(s) and exclusion(s) criteria used in
+the search and returns six statistics for each variable specified:
+
+Total finds:           the number of observations when criterion is met.
+Average finds per obs: the average occurrence of word when criterion is met.
+Average length:        the average word length when criterion is met.
+Average position:      the average position of match when criterion is met.
+Average tf-idf:        the average term frequency-inverse document frequency
+                       when the criterion is met.
+Means test p-value:    the p-value for a means comparison test across samples
+                       identified by the different criteria.
+
+                               {bf:Summary Table}                               
+{hline 80}
+{res}variable:   {txt}post
+n: 524{col 28}                  Average                   {col 76}Means
+{col 21}Total{col 29}-----------------------------------------{col 77}test
+{res}keyword(s){txt}{col 21}Finds{col 32}Finds{col 42}Length{col 51}Position{col 64}TF-IDF{col 74}p-value
+--------------------------------------------------------------------------------
+princi..)+e~t           5    .863636          2          .    2.00884          .
+--------------------------------------------------------------------------------
+Total                   5    .863636          2          .    2.00884          .
+{hline 80}
+{res}exclusion(s):
+{txt}
+
+{com}. textfind post, key("principal") but("account|management|officer|administ|planning|analyst|system|secretary|policy|nutrition|in[dt]|human|finan|audit|insp|comm|infor|sc") nocase
+{txt} 
+Searching keyword "principal" in variable post ...
+Searching exclusion "account|management|officer|administ|planning|analyst|system|secretary|policy|nutrition|in[dt]|human|finan|audit|insp|comm|infor|sc" in variable post ...
+
+
+The following table displays the keyword(s) and exclusion(s) criteria used in
+the search and returns six statistics for each variable specified:
+
+Total finds:           the number of observations when criterion is met.
+Average finds per obs: the average occurrence of word when criterion is met.
+Average length:        the average word length when criterion is met.
+Average position:      the average position of match when criterion is met.
+Average tf-idf:        the average term frequency-inverse document frequency
+                       when the criterion is met.
+Means test p-value:    the p-value for a means comparison test across samples
+                       identified by the different criteria.
+
+                               {bf:Summary Table}                               
+{hline 80}
+{res}variable:   {txt}post
+n: 524{col 28}                  Average                   {col 76}Means
+{col 21}Total{col 29}-----------------------------------------{col 77}test
+{res}keyword(s){txt}{col 21}Finds{col 32}Finds{col 42}Length{col 51}Position{col 64}TF-IDF{col 74}p-value
+--------------------------------------------------------------------------------
+principal              88          1    3.27273    1.01136    .608404          .
+--------------------------------------------------------------------------------
+Total                   5          1          2          1    2.32603    4.1e-33
+{hline 80}
+{res}exclusion(s):
+{txt}"account|management|officer|administ|planning|analyst|system|secretary|policy|nutrition|in[dt]|human|finan|audit|insp|comm|infor|sc"

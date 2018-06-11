@@ -1,0 +1,19 @@
+
+. use CivilServantsNeverland, clear
+
+. tab post
+
+                        post |      Freq.     Percent        Cum.
+-----------------------------+-----------------------------------
+                     Analyst |        527       10.54       10.54
+Senior Hook Security Officer |        525       10.50       21.04
+                     analist |        501       10.02       31.06
+                     analyst |        476        9.52       40.58
+               fairy analyst |        512       10.24       50.82
+fairy officer (senior level) |        480        9.60       60.42
+                     officer |        504       10.08       70.50
+              piracy analyst |        492        9.84       80.34
+              senior manager |        507       10.14       90.48
+       senior piracy analyst |        476        9.52      100.00
+-----------------------------+-----------------------------------
+                       Total |      5,000      100.00

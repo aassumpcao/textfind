@@ -1,0 +1,37 @@
+\ifnum 5=1 \def\bibname{Reference}
+\else \def\bibname{References} \fi
+\begin{thebibliography}{5}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+
+\bibitem[{Belotti and Depalo(2010)}]{BelottiTranslationnarrativetext2010}
+Belotti, F., and D.~Depalo. 2010.
+\newblock Translation from Narrative Text to Standard Codes Variables with
+  {{Stata}}.
+\newblock \emph{Stata Journal} 10(3): 458--481.
+
+\bibitem[{Cox(2011)}]{CoxStatatip982011}
+Cox, N.~J. 2011.
+\newblock Stata Tip 98: {{Counting}} Substrings within Strings.
+\newblock \emph{Stata Journal} 11(2): 318--320.
+
+\bibitem[{Grimmer and Stewart(2013)}]{GrimmerTextDataPromise2013a}
+Grimmer, J., and B.~M. Stewart. 2013.
+\newblock Text as {{Data}}: {{The Promise}} and {{Pitfalls}} of {{Automatic
+  Content Analysis Methods}} for {{Political Texts}}.
+\newblock \emph{Political Analysis} 21(3): 267--297.
+
+\bibitem[{Schonlau et~al.(2017)Schonlau, Guenther, and
+  Sucholutsky}]{SchonlauTextminingngram2017}
+Schonlau, M., N.~Guenther, and I.~Sucholutsky. 2017.
+\newblock Text Mining with N-Gram Variables.
+\newblock \emph{Stata Journal} 17(4): 866--881.
+
+\bibitem[{Williams and Williams(2014)}]{WilliamstxttoolUtilitiestext2014}
+Williams, U., and S.~P. Williams. 2014.
+\newblock Txttool: {{Utilities}} for Text Analysis in {{Stata}}.
+\newblock \emph{Stata Journal} 14(4): 817--829.
+
+\end{thebibliography}

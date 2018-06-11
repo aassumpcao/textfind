@@ -47,6 +47,12 @@ program textfind, rclass
 
   *** Commands by variable and keyword
   foreach i of local varlist {
+    local vars: word count `varlist'
+
+    if `vars' > 1 {
+      di as err "textfind is not ready to handle multiple variables yet."
+      exit 103
+    }
 
     *** Check whether variable type was actually string
     capture confirm str variable `i'
@@ -315,7 +321,7 @@ program textfind, rclass
             *** Test whether the sample identified by keyword is different than
             *** the sample NOT identified by keyword
             ttest ``i'0' == ``i'`z'1' if `touse'
-            return scalar f`i'`z'6 = `r(p)'
+            return scalar f`i'`z'6 = .
           }
 
           else if `z' > 1 {
@@ -456,7 +462,7 @@ program textfind, rclass
             *** Test whether the sample identified by keyword is different than
             *** the sample NOT identified by keyword
             ttest ``i'0' == ``i'`z'1' if `touse'
-            return scalar n`i'`z'6 = `r(p)'
+            return scalar n`i'`z'6 = .
           }
 
           else if `z' > 1 {

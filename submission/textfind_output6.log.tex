@@ -1,0 +1,53 @@
+{\smallskip}
+. textfind post, key("principal" "economist") nocase
+
+{\smallskip}
+                               {\bftt{Summary Table}}
+\HLI{80}
+variable:   post
+n: 524                                       Average                       Means
+                    Total   -----------------------------------------       test
+keyword(s)          Finds      Finds     Length   Position     TF-IDF    p-value
+--------------------------------------------------------------------------------
+principal              88          1    3.27273    1.01136    .608404          .
+economist              10          1          2          2    2.11142    2.3e-21
+--------------------------------------------------------------------------------
+Total                   5          .          2          .          .    .025207
+\HLI{80}
+exclusion(s):
+{\smallskip}
+
+. textfind post, key("principal(.)+economist") nocase
+
+{\smallskip}
+                               {\bftt{Summary Table}}
+\HLI{80}
+variable:   post
+n: 524                                       Average                       Means
+                    Total   -----------------------------------------       test
+keyword(s)          Finds      Finds     Length   Position     TF-IDF    p-value
+--------------------------------------------------------------------------------
+princi..)+e{\tytilde}t           5    .863636          2          .    2.00884          .
+--------------------------------------------------------------------------------
+Total                   5    .863636          2          .    2.00884          .
+\HLI{80}
+exclusion(s):
+{\smallskip}
+
+. textfind post, key("principal")
+
+{\smallskip}
+                               {\bftt{Summary Table}}
+\HLI{80}
+variable:   post
+n: 524                                       Average                       Means
+                    Total   -----------------------------------------       test
+keyword(s)          Finds      Finds     Length   Position     TF-IDF    p-value
+--------------------------------------------------------------------------------
+principal              88          1    3.27273    1.01136    .608404          .
+--------------------------------------------------------------------------------
+Total                   5          1          2          1    2.32603    4.1e-33
+\HLI{80}
+exclusion(s):
+"account|management|officer|administ|planning|analyst|system|secretary|policy|
+nutrition|in[dt]|human|finan|audit|insp|comm|infor|sc"

@@ -1,0 +1,260 @@
+% readme.tex -- a short example of how each Stata Journal insert should be
+% organized.
+
+\inserttype[st0001]{article}
+\author{Andre Assumpcao}{Andre Assumpcao\\Department of Public Policy\\The University of North Carolina\\Chapel Hill, NC, USA\\aassumpcao@unc.edu}
+\title[textfind]{textfind: A Data-driven Text Analysis Tool for Stata}
+
+\maketitle
+
+\begin{abstract}
+{\tt textfind} is a data-driven tool to identify and classify textual information in Stata. It makes three main contributions beyond existing text programs: (i) it uses regular expressions and Unicode encoding for complex, non-English search patterns; (ii) it produces six measures of textual match quality; and (iii) it generates variables following search patterns so that they can be used in further quantitative analysis. By using {\tt textfind}, researchers can simultaneously employ complex search patterns and report data-driven match quality measures.
+
+\keywords{\inserttag, screening, moss, ngram, txttool, term frequency-inverse document frequency, tf-idf, bag of words, topic analysis.}
+\end{abstract}
+
+\section[Introduction]{Introduction} \label{sec:1}
+Despite growing interest in the use of text as data across the social sciences, the low availability of text programs, the lack of consensus on analysis models, and the few solutions that integrate machine learning and causal inference are but a few of the existing obstacles to more widespread use of text in quantitative analysis. In addition to these issues, the translation of text data into quantitative variables has suffered from unsystematic, vague classification methods that are discipline-specific and prevent their use across the social sciences.
+
+In this article, I address some of these issues by implementing the {\tt textfind} program. The command takes in user-defined {\it n}-grams and searches for such patterns in a variable provided to Stata. The first key feature about {\tt textfind} is that the user can define a number of complex search patterns, such as exclusion {\it n}-grams and case-specific, exact, or partial match criteria -- all in one line of code. The program searches substrings using regular expressions and Unicode encoding so that users are not constrained by misspelling of {\it n}-grams nor language-specific characters.
+
+Secondly, {\tt textfind} produces six statistics reporting the quality of the match, moving away from more unsystematic classification methods. For instance, instead of focusing on whether a left-leaning political group should be identified by descriptions containing the unigrams `liberal' or `progressive,' the researcher can actually test how much better the identification is when using two unigrams rather than one. She can rely on the six {\tt textfind} measures to serve as data-driven evidence of her choice.
+
+Finally, the command generates new variables containing the information from five out of the six statistics so that they can be used for further quantitative analysis, such as displayed in summary statistics or included in regression analyses, for example.
+
+In the following section, I discuss common pitfalls of using text as data and how {\tt textfind} complex search algorithm advances analysis beyond other available solutions. In section III, I describe the syntax of the program. Finally, in section IV, I apply {\tt textfind} to one hypothetical dataset and two actual datasets (from experimental research in Malawi and from observational research in Brazil) to show the versatility of the command when working with different languages, strings containing errors, or many misspelled words. Section V concludes.
+
+\section[Problems]{Classification Problems} \label{sec:2}
+Stata already has many useful programs to conduct text analysis: {\tt txttool} processes strings for bag-of-words analyses \citep{WilliamstxttoolUtilitiestext2014}; {\tt ngram} extracts grams from strings sequences \citep{SchonlauTextminingngram2017}; {\tt moss} returns counts and positions of substrings following user-defined search patterns \citep{CoxStatatip982011}; {\tt screening} screens variables for keywords and then optionally tabulates results and generates new variables based on the search criteria \citep{BelottiTranslationnarrativetext2010}. None of these programs, however, does all of these at once and solves the problems that I discuss below. These are the two main contributions of {\tt textfind} to the Stata community-contributed software bank.
+
+\subsection[Case Sensitiveness]{Case-Sensitive Match} \label{subsec:2.1}
+Problem number one is when {\it n}-gram letter case is a relevant factor for classification of observations. Suppose you are working with data from an open-ended survey of Chicago residents containing a question on how long does their morning commute usually take. It is entirely plausible that someone will answer ``I take the Red Line to work, so my commute usually takes about 40 minutes when the trains are running on schedule'' while someone else will say ``I drive fast so, if I leave on time and there are only a few red lights along the way, I am at work in less than 15 minutes.''
+
+Suppose further that you do not have access to answers on the type of transport people take, either because this question was not included in the survey or it was not provided to you; as an attentive researcher, however, you know it is essential to control travel times by transport type. Then, inferring transportation means from the matches of unigram `red' in the answers might be a terrible idea. Unless you search for letter `r' exclusively in lower or uppercase, `red' could refer to the Chicago Transit Authority (CTA) elevated train line or the stop sign in traffic lights across the city. In the former case, the mode of transport is the train; in the latter, it is the car. Thus, in this textual search, if you do not control for letter case, you would be mistakenly grouping together two different means of transportation.
+
+Though the example above might seem silly, consider the well-established practice in political science of analyzing political texts \citep{GrimmerTextDataPromise2013a}. A case-insensitive search for word `veteran' in a corpora of congressional speeches in the United States could point to cases where the author of the speech made references to `Veteran Affairs,' a government department, or to an individual who has served in the U.S. armed forces. As with the previous this case, the unigram `veteran' would also be a bad search pattern because it would pick up two different subjects of interest but would not tell apart one from the other. {\tt textfind} solves these problems by explicitly defining letter case: the default option is a case-sensitive match which can be overriden if the {\tt nocase} option is specified.
+
+While you could use {\tt screening} to pick up on these subtle classification differences, there are two limitations that make it only a second best option: in {\tt screening}, (i) the user has to manually ask for a tabulate (or count) report after specifying the search keywords and (ii) the program does not work on strings with Unicode encoding. {\tt ngram} is an ideal outlet for preserving letter case when processing text, but searching for keywords in string variables is beyond its scope. In fact, these are not significant improvements over a combination of {\tt tab} and {\tt ustrregexm} (or any other function from the regular expression Unicode family).
+
+\subsection[Additive]{Additive Match}
+The second common pitfall occurs when the search pattern takes in two or more unigrams, i.e. when we want to identify bigrams, trigrams, etc. In the Chicago example from subsection \ref{subsec:2.1}, this means the researcher would like to identify the mode of transportation by defining pairs (`Red,' `Line') or (`red,' `light') as a single search criterion.
+
+There are a few ways to do this using existing programs, but they all have small shortfalls that make them less than optimal solutions. The best existing alternative is feeding the bigram `Red Line' into {\tt moss}. The problems of doing so are: (i) you have to know what is going on between the two unigrams you are using, such as the number of spaces and tabs; in other words, you have to focus on something else other than your main search pattern; (ii) or you have to be versed in regular expressions and specify option {\tt regex} with attribute ``{\tt ( )+}'' to get around any whitespace between unigrams; (iii) you have to run an additional command to generate match result (binary) variables; last, (iv) when working with languages that contain special characters (e.g.~Portuguese's  {\it \c c} or Spanish's {\it \~ n}), you will have to specify the {\tt unicode} option to make sure {\tt moss} searches for words in the correct form.\footnote{{\tt screening} searches multiple keywords independently, so it cannot run additive or alternative matches. By default, {\tt textfind} reports all independent matches and multiple keyword matches (if specified). Users could use bigrams (or any other {\it n}-gram) as keywords in {\tt screening}, such as they would with {\tt moss}, but they would still be subject to problems (i), (ii), and (iv) described above.}
+
+When using more than one {\it n}-gram in the search criteria in {\tt textfind}, the program automatically runs an additive search (`keyword1' \underline{and} `keyword2' should be present to yield a match), in Unicode, generating both binary and position variables if specified by the user. Thus, the researcher does not have to worry about any whitespace or special characters in the string variable; she focuses on the search pattern and what variables she wants the program to return. In fact, this is also a safer option than using bigrams because there are fewer constraints on the order and distance between unigrams. They can come in a different order or further away by as many words as possible in the textual observation.\footnote{Nevertheless, for completeness purposes, {\tt textfind} was designed to also perform alternative matches by using option {\tt or}, which overrides its additive match pattern.}
+
+\subsection[Exact]{Exact Match}
+Another issue {\tt textfind} helps solve is the distinction between exact and partial matches. Suppose you are working with the political speech database from subsection \ref{subsec:2.1}. This time, however, you find out that one variable in the data is a table of keywords indexing documents such that military-related speeches could be simultaneously indexed by `army,' `air force,' `marines,' `Veteran Affairs,' `veteran,' etc. Since you want to keep researching matters of the U.S. Department of Veteran Affairs (VA) exclusively but members of Congress could refer to all of these subjects in their speech, a partial match on `Veteran Affairs' for this variable will not be particularly helpful. You would likely be picking up military speeches in general instead of VA-exclusive speeches.
+
+Though (i) {\tt strmatch("{\it string}")} and (ii) {\tt regexm("\stcaret({\it string})+\$")} both perform an exact match, running {\tt textfind} is a much more efficient command; it automatically searches exact substrings in Unicode, avoiding pitfalls of non-English datasets from running (i); and it works even when the user is not familiar with regular expressions, such as it would be required for running (ii). {\tt moss} does allow for exact substring match, but it requires enabling its regular expression option and the use of search patterns from (ii), therefore keeping only solving one of the limitations above.
+
+\subsection[Multiple Criteria]{``Find but Exclude'' Match}
+The last important identification feature in the command is a combined ``find but exclude'' match. This criterion is useful for complex classification rules that involve finding one or more {\it n}-grams but which, in the presence of another {\it n}-gram (here called ``exclusion'' {\it n}-gram), should be removed from the match.
+
+Let us go back to the hypothetical database of political text. Now you want to identify speeches in which the author specifically refers to the U.S. Department of Veteran Affairs, and in particular to cases where she is addressing expenditure problems. Furthermore, you want to hone in on capital expenditures (i.e. investments) but not on human resources spending. None of the string functions summarized here would help you; in fact, you would have to define various individual search and exclude criteria and concatenate them by using multiple and/or logical operators.
+
+Loosely speaking, you would need two find criteria for government department (`Veteran Affairs' or `VA'), three for investments (`investment' or `capital expenditures' or `capex'), and, lastly, two exclusion criteria for expenditure type (`human resources' or `HR'). Criteria 1 and 3 should be case-sensitive so that the search algorithm skips the sequence of characters `va' or `hr' in other words and only matches the appropriate abbreviations in uppercase. If you are familiar with regular expressions, your code could look something like this:\footnote{I have intentionally omitted the equal to one part in the first expression in order to show how individual concatenation of regular expressions can become problematic quite easily. Though it is not a problem when the outcome of the regular expression evaluates to true, it becomes a problem when the researcher is interested in the false (exclude) condition.}
+
+
+\indent {\tt ustrregexm({\it varname}, "([Vv]eteran [Aa]ffairs)|"VA", 0) \& /// \\
+\indent ustrregexm({\it varname}, "investment|(capital expenditure)|capex", 1) \& /// \\ \indent ustrregexm({\it varname}, "([Hh]uman [Rr]esources)|HR", 0) == 0
+}
+
+In addition to the criteria, you would also have to define the action to take when a match is found, e.g.~{\tt tab} or {\tt generate}. Even if you do write out your search criteria in another way, you are prone to making many coding mistakes that are very time-consuming. You would have to type out three string functions, their variables, their attributes, and define case-sensitiveness three times in addition to the action you want Stata to take. With {\tt textfind}, you write everything out once and that is it. Moreover, the program produces a table with results of the match, allowing you to go back and forth with keywords, exclusions, and options before you settle on the best match pattern according to the statistics provided by the program.
+
+\section[textfind]{Program Description}
+\subsection[Syntax]{Syntax}
+\begin{stsyntax}
+  {\tt textfind}
+  \varname\
+  \optif\
+  \optin\
+  \LB,
+    {\dunderbar{key}word}({\it ``string'' ...})
+    {\tt but}({\it ``string'' ...})
+    {\tt nocase}
+    {\tt exact}
+    {\tt or}
+    {\tt notable}
+    {\tt tag}(\newvarname)
+    {\tt nfinds}
+    {\tt length}
+    {\tt position}
+    {\tt tfidf}\RB
+\end{stsyntax}
+
+\subsection[Options]{Options}
+\hangpara
+{\tt \dunderbar{key}word}({\it ``string'' ...)} is the main search criteria. It looks up multiple substrings in each observation of {\it varname}, where the substring could be text, numbers, or any other {\tt ustrregexm()} search criteria.
+
+\hangpara
+{\tt but}({\it ``string'' ...)} is the main exclusion criteria. It looks up multiple exclusion substrings in each observation of {\it varname}, where the substring could be text, numbers, or any other {\tt ustrregexm()} search criteria, and removes observations that were previously matched by {\tt keyword()}. \\
+
+\noindent At least one of these options above has to be stated by the user, since there is no way to search for something that was not defined. \\
+
+\hangpara
+{\tt nocase} performs a case-insensitive search.
+
+\hangpara
+{\tt exact} performs an exact search of {\tt keyword()} in {\it varname} and only matches observations that are entirely equal to {\it ``string.''}
+
+\hangpara
+{\tt or} performs an alternative match for multiple entries in {\tt keyword()}. The default is an additive search when the number of substrings is greater than or equal to two (e.g.~{\it ``string1''} and {\it ``string2''}).
+
+\hangpara
+{\tt notable} asks Stata not to return the table of summary statistics.
+
+\hangpara
+{\tt tag({\it newvarname})} generates one variable called {\it newvar} marking all observations that were found under search criteria.
+
+\hangpara
+{\tt nfinds} generates one variable per substring in {\tt keyword()} containing the number of occurrences of {\it ``string''} in each observation. Default variable names are {\it myvar1{\textunderscore}nfinds}, {\it myvar2{\textunderscore}nfinds}, ...
+
+\hangpara
+{\tt length} generates new variable {\it myvar{\textunderscore}length} containing the word length of each variable in varlist for which search criteria is found.
+
+\hangpara
+{\tt position} generates one variable per substring in {\tt keyword()} containing the position where {\it ``string''} was first found in each observation. Default variable names are {\it myvar1{\textunderscore}pos}, {\it myvar2{\textunderscore}pos}, ...
+
+\hangpara
+{\tt tfidf} generates one variable per substring in {\tt keyword()} containing the term frequency-inverse document frequency statistic for each {\it ``string''} in each observation. Default variable names are {\it myvar1{\textunderscore}tfidf}, {\it myvar2{\textunderscore}tfidf}, ...
+
+\subsection{Output}
+{\tt textfind} generates six statistics displaying the quality of the search criteria defined by the user. They are:
+
+
+\hangpara
+{\bf Total Finds (exclusions):} returns the number of observations found by {\tt keyword()} or excluded by {\tt but()}. If both have been specified, then it will find all observations for which substrings in {\tt keyword()} were found but for which no substrings from {\tt but()} were found. Thus, {\tt but()} \dunderbar{removes} observations from the sample identified by {\tt keyword()}.
+
+\hangpara
+{\bf Average Finds (exclusions):} returns the average number of occurrences of substrings from {\tt keyword()} [or exclusions from {\tt but()}] for all observations in which the search criteria found [did not find] substring {\tt keyword({\it ``string''})} [{\tt but()}].
+
+\hangpara
+{\bf Average Length:} returns the average length (in words) of text in observations where {\tt keyword()} [{\tt but()}] were [not] found.
+
+\hangpara
+{\bf Average Position:} returns the average position in which {\tt keyword()} or {\tt but()} were found for all observations.
+
+\hangpara
+{\bf Average TF-IDF:} returns the average tf-idf statistic for all observations in which {\tt keyword()} or {\tt but()} were found.
+
+\hangpara
+{\bf Means test:} returns the {\it p}-value of a {\it t}-test on the difference of means across two immediate samples. It is a measure of improvement of using {\it n} vs. {\it n-1} substrings when identifying a subsample of the textual observations.
+
+\section[Examples]{textfind Examples}
+In this section, I implement {\tt textfind} on three different datasets to demonstrate its capabilities in addressing the pitfalls discussed in section II. The first dataset is a hypothetical collection of government functions in Neverland. I am focusing here on the ease with which we conduct text identification compared to Stata's existing solutions. Next, I move over to a real dataset of job functions based on a survey conducted among government officials in Malawi in 2016. This real dataset presents additional classification problems from different combinations of job descriptions. Finally, I implement the command on a sample of government spending tasks in Brazil for the period 2004-2010 and use it to group expenditures as ``procurement'' or ``public works'' related. Such application demonstrates the power of {\tt textfind} when used in non-English, error-ridden text.
+
+\subsection{Civil Servants in Neverland} \label{subsec:4.1}
+In this hypothetical dataset, 5,000 civil servants hold 10 different positions in the government of Neverland. These positions are self-reported job titles, so the problem here is the identification of similar functions across government that nevertheless have different titles. For example, an `analyst' and an `officer' are likely performing the same duties, but perhaps `analyst' is a job title used in the Ministry of Health whereas `officer' is used in the Ministry of Education. The output below contains a quick description of all positions in the government of Neverland.
+
+\begin{stlog}
+\input{textfind_output1.log.tex}\nullskip
+\end{stlog}
+
+Before checking for keywords `analyst' and `officer,' we should note that these job titles are not always reported in the same letter case, that there are a few misspelled words, and that a combination of any of the unigrams with word `senior' differentiates positions even further. Therefore, using the knowledge from section \ref{sec:2}, we would want: (i) a case-insensitive search, since letter case comes from the position of each unigram in the job title and position here is meaningless; (ii) an alternative match, because both `analyst' or `officer' define the same function; (iii) a ``find but exclude'' match, since the word `senior,' combined with either unigram, picks up government officials in a higher hierarchical level than that of `analyst' or `officer.' After accounting for these factors, the command below would identify the sample of interest:
+
+\begin{stlog}
+\input{textfind_output2.log.tex}\nullskip
+\end{stlog}
+
+{\tt textfind}, on the other hand, would build the following table:
+
+\begin{stlog}
+\input{textfind_output3.log.tex}\nullskip
+\end{stlog}
+
+The first feature of {\tt textfind} is the ease with which the user can search for {\it n}-grams in textual observations. The command is more efficient, more intuitive, and less vulnerable to coding errors when compared to the combination of native commands {\tt tab} and {\tt ustrregexm()}. For example, if the user is not familiar with regular expressions, she could still have gotten the same results by using `analyst' and `analist' as different substrings to identify both correctly spelled and misspelled keywords.
+
+In addition to total finds, the user would also have five other statistics summarizing the quality of the search criteria. She could compare keywords' average number of occurrences and textual length to get a sense of the relative importance of each keyword across job titles descriptions.
+
+Moreover, she could even check whether the identification of a job function improves when she uses more unigrams rather than less, or when she uses exclusions words compared to when she does not. This is the information in the last column of the summary table, where {\tt textfind} reports the {\it p}-value for a {\it t}-test across immediate sample means identified by different search criteria. Table \ref{tab:1} contains the (row-wise)\footnote{Row 1 represents the first sample found by the search pattern, so the means test here is not meaningless.} questions that column seven helps to answer.
+
+\begin{table}[!htbp]
+  \caption{Means test column interpretation}\label{tab:1}
+  \centering
+  \small
+  \begin{tabular}{|l|p{11cm}|}
+  \hline
+  Row 2 & Is the sample identified by `anal[yi]st' or `officer' the same as the sample identified only by `anal[yi]st'? \\
+  \hline
+  Row 3 & Is the sample identified by `anal[yi]st' or `officer' where no `senior' is found the same as the sample identified only by `anal[yi]st' or `officer'? \\
+  \hline
+  \end{tabular}
+\end{table}
+
+\subsection{Malawi Government Officials}
+The second dataset comes from a survey of government officials in Malawi in 2016. I focus on one variable which, much like the hypothetical Neverland dataset, contains information on officials' job function. A simple tabulation of this variable reveals that case-sensitiveness matters for job titles (`ict'/`ICT' and `district'/`District' describe different positions) and that a common unigram is shared by different officials (`principal human resources management' vs.~`principal economist'). These are common issues when enumerators have to transcribe respondents' answers in survey. Thus, we need to use the full capability of {\tt textfind} to properly identify job functions, since using case-sensitive and additive match both matter for the identification of officials within the Malawian government.
+
+Let us address case-sensitiveness first. The substring `ICT' is an abbreviation for Information and Communications Technology. However, it is also part of unigram `district;' therefore, if we ignore letter case in a partial search of `ICT,' we will end up grouping together two different job functions as one.
+
+\begin{stlog}
+\input{textfind_output4.log.tex}\nullskip
+\end{stlog}
+
+With {\tt textfind}, we can easily do this by specifying option {\tt but({\it ``district''})} or using the default case-sensitive search. The two alternatives are shown below.\footnote{From here on, I edit out table headers to make it easy to visualize {\tt textfind} results.} In addition to the versatility of {\tt textfind}, there are five other measures of match quality beyond {\tt tabulate}. A high TF-IDF, for instance, means that `ICT' is an important word in the definition of a job title.
+
+\begin{stlog}
+\input{textfind_output5.log.tex}\nullskip
+\end{stlog}
+
+For the second case, when job titles share a common unigram, we have three options using {\tt textfind}. We could ask for (i) a search on both `principal' and `economist,' (ii) a search on `principal(.)+economist' (using regular expressions), or that (iii) {\tt textfind} finds all other words that should be removed from a match on `principal.' They all yield the same result, the difference being on the other quality measures reported by the program.
+
+\begin{stlog}
+\input{textfind_output6.log.tex}\nullskip
+\end{stlog}
+
+\subsection{Government Spending in Brazil} \label{subsec:4.3}
+Lastly, I implement {\tt textfind} on a database of local government expenditure tasks between 2004-2010 in Brazil. There is a lot of variation in the description of these expenditure tasks: some are long; some are single-word; some contain numbers and strings; etc. They also contain non-English characters, such as Portuguese's {\it \c c}, {\it \~ a}, {\it \^ e}, etc.\footnote{It means I could not pre-process the strings using {\tt txttool} because of its ASCII nature.} In addition to these features, the expenditure tasks are often long text entries summarizing policy programs or activities and, as such, contain multiple errors, e.g.~many whitespaces between words and paragraph/line breaks. Fortunately, however, {\tt textfind} solves all of these issues by focusing exclusively on Unicode regular expression search criteria.
+
+In this analysis, I am interested in assigning these expenditure tasks to one of three categories: public procurement, public works, or neither. The search criteria should take in {\it n}-grams associated with procurement and public works, remove observations from the each sample in which exclusion keywords are found, and generate categorical variables containing the match result. For instance, unigram `acquisition' would belong to procurement group; `construction' would be included in the public works group.
+
+Should I just throw in keywords that scholars claim are associated with procurement or public works? This is precisely where one of {\tt textfind}'s greatest contribution lies. Its six quality measures serve to guide the user on the {\it n}-grams that best identify each group. In particular, the means test in the last column demonstrates the incremental benefit of using more keywords rather than less for the identification of each group (as summarized in section \ref{subsec:4.1}). The lists produced below are a result of a number of interactions and words have been stemmed to their lowest possible unique root.
+
+\begin{table}[htbp]
+  \caption{Assignment Keywords}\label{tab:2}
+  \centering
+  \small
+
+  \begin{tabular}{|r|l|}
+  \hline
+  \textbf{Procurement} & \textbf{Public Works} \\
+  \hline
+  {\bf Find} & {\bf Find} \\
+  ``aquisi'' & ``constru'' \\
+  ``execu'' & ``obra'' \\
+  ``ve[{\'i}i]culo'' & ``implant'' \\
+  ``despesa'' & ``infra(.)*estrut'' \\
+  ``medicamento(.)*peaf'' & ``amplia'' \\
+  ``compra'' & ``abasteci(.)*d(.)*[{\'a}a]gua'' \\
+  ``pnate'' & ``reforma'' \\
+  ``transporte(.)*escola'' & ``esgot'' \\
+  ``kit'' & ``m[{\'o}o]dul(.)*sanit[{\'a}a]rio'' \\
+  ``adquir'' & ``(melhoria)+(.)*(f[{\'i}i]sica)+'' \\
+    & ``benfeit'' \\
+  \hline
+  & {\bf Exclude} \\
+  & ``psf'' \\
+  \hline
+  \end{tabular}
+\end{table}
+\pagebreak
+
+The output produced by {\tt textfind} is reported below.\footnote{I fed both lists to Stata using locals `purchase' and `works.'} In the procurement group, each {\it n}-gram significantly improves sample identification over the previous group of keywords. For the works group, if I had asssumed statistical significance only at 5\%, I would have dropped the last keyword since it would not significantly identify a larger group ({\it p}-value = .083265 \textgreater \space .05). Including option {\tt tag()} would mark 6,443 observations as public procurement and 2,447 as public works out of the 12,399 total.
+
+\begin{stlog}
+\input{textfind_output7.log.tex}\nullskip
+\end{stlog}
+
+\section[Conclusion]{Conclusion}
+In this article, I implement program {\tt textfind} to address common pitfalls of textual data classification. It significantly improves over existing solutions in Stata by using regular expression patterns, by setting Unicode as the default search pattern, by producing six measures of match quality, and finally by building in variable generation capability so that the match results can then be fed into quantitative analysis.
+
+{\tt textfind}, however, is an ongoing project and I hope to improve it over time. The most important development will be reporting more precise quality measures even when complex regular expressions are used either as {\tt keyword()} or {\tt but()}, which can be seen in the results in section \ref{subsec:4.3}. Second, I should work further on making it faster. It took about five minutes to perform the search in section \ref{subsec:4.3} with at least nine keywords and 12,399 observations -- some of which were 2556 characters long. Finally, although {\tt textfind} stores all results in matrix form for later use with markup languages and in word processors, this process will be more efficient when I integrate {\tt textfind} with other table-producing commands.
+
+\bibliographystyle{sj}
+\bibliography{textfind}
+
+\newpage
+\section*{Acknowledgement}
+I thank Ciro Biderman and Brigitte Seim for providing valuable advice and text analysis problems that motivated this paper. I would also like to thank the Center of Politics and Public Economics at the Get\'ulio Vargas Foundation (CEPESP-FGV), the U.K. Department for International Development -- Malawi office, Gerhard Anders, Fidelis Kanyongolo, Bright Chimatiro, and Jimmy Mkandawire for providing the data for examples in this paper. The Unicode word position and count variables were originally created by \cite{CoxStatatip982011} in ASCII format for the {\tt moss} program, so I am also very grateful for his insight.
+
+\endinput
