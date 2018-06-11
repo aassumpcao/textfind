@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex main"] 1528744323 "main.aux" "main.bbl" "main" 1528745183
+["bibtex main"] 1528744323 "main.aux" "main.bbl" "main" 1528746938
   "./sj.bst" 1525111399 32283 7e834e967d3e680137e0c0e9b119198c ""
-  "main.aux" 1528745182 3793 8a22b5844f473f85e158d2b11152c235 ""
+  "main.aux" 1528746938 3793 8a22b5844f473f85e158d2b11152c235 ""
   "textfind.bib" 1528725309 4498 77f38adbec8ec2dbfca0fb39ccb53b62 ""
   (generated)
   "main.bbl"
   "main.blg"
-["pdflatex"] 1528745182 "main.tex" "main.pdf" "main" 1528745183
+["pdflatex"] 1528746937 "main.tex" "main.pdf" "main" 1528746938
   "/usr/local/texlive/2018/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/adobe/times/ptmb.tfm" 1480098689 2684 6e2c4802f04d90088c5e467e1e010ed7 ""
   "/usr/local/texlive/2018/texmf-dist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1480098689 1528 f853c4d1b4e0550255e02831fdc8496f ""
@@ -96,16 +96,16 @@
   "/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1528426230 2849778 d20fd0a0d92d412ec9b4143de20d68a5 ""
   "/usr/local/texlive/2018/texmf-var/web2c/pdftex/pdflatex.fmt" 1528423583 4220582 296642f53d93cdbc02373533d0f42b0a ""
   "/usr/local/texlive/2018/texmf.cnf" 1523934483 577 0b39adfd7c93507ff20c9c14c2f1a33f ""
-  "main.aux" 1528745182 3793 8a22b5844f473f85e158d2b11152c235 ""
+  "main.aux" 1528746938 3793 8a22b5844f473f85e158d2b11152c235 ""
   "main.bbl" 1528744323 1517 beca76446bbaa3c34f53b1ddf7527ac0 "bibtex main"
-  "main.out" 1528745182 110 e1654e2b1caed76c02605610ceb603ba ""
-  "main.pp1" 1528745182 18 f589e8a5d6f2a8118ecba2f7b9e8733a ""
+  "main.out" 1528746938 110 e1654e2b1caed76c02605610ceb603ba ""
+  "main.pp1" 1528746938 18 f589e8a5d6f2a8118ecba2f7b9e8733a ""
   "main.tex" 1528733465 699 3a1ac74ec32df8970fc334f51f60a645 ""
   "pagedims.sty" 1525111399 4233 586b3d4b95a5b8e154f9891883086267 ""
   "sj.sty" 1525111399 17739 cfc447875e8da6bdc8ad616702dbf2b6 ""
   "stata.sty" 1525111399 16515 c688671b5d7eafc41c1c2463b9e6c1b9 ""
   "statapress.cls" 1525111399 6796 d880b7380ff63aff3fc8f96e6905861e ""
-  "textfind.tex" 1528745177 31138 98bee72ab1d37f871803450dce95c6b1 ""
+  "textfind.tex" 1528746936 31154 b0e2788f93645825a9e5ebae73a1e050 ""
   "textfind_output1.log.tex" 1528728329 986 9ad684e8a4d5d4bc1e5d1856d106a76a ""
   "textfind_output2.log.tex" 1528728381 737 2891183711984d382f8e3ce5a15f27c2 ""
   "textfind_output3.log.tex" 1528728492 1785 122f13d3d66a4f10fd466d1b75b4e5c1 ""
@@ -114,9 +114,9 @@
   "textfind_output6.log.tex" 1528731657 2458 de73d94fe8f897708ec3608a174e3460 ""
   "textfind_output7.log.tex" 1528732174 3138 e2aaab0de5811ea493d76ce7f7267eb1 ""
   (generated)
-  "main.pp1"
-  "main.tag"
-  "main.aux"
-  "main.out"
   "main.log"
   "main.pdf"
+  "main.tag"
+  "main.pp1"
+  "main.aux"
+  "main.out"
